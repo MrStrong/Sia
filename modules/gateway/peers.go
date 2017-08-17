@@ -163,6 +163,7 @@ func acceptableSessionHeader(ourHeader, remoteHeader sessionHeader, remoteAddr s
 	} else if err := remoteHeader.NetAddress.IsStdValid(); err != nil {
 		return fmt.Errorf("invalid remote address: %v", err)
 	}
+	//TODO is this check necessary?
 	// Check that claimed NetAddress matches remoteAddr
 	connHost, _, _ := net.SplitHostPort(remoteAddr)
 	claimedHost, _, _ := net.SplitHostPort(string(remoteHeader.NetAddress))
@@ -175,6 +176,9 @@ func acceptableSessionHeader(ourHeader, remoteHeader sessionHeader, remoteAddr s
 // managedAcceptConnv130Peer accepts connection requests from peers >= v1.3.0.
 // The requesting peer is added as a node and a peer. The peer is only added if
 // a nil error is returned.
+
+//TODO seems to have some of the issues in func managedConnectv130Peer(..). Can these two funcs be optimized?
+
 func (g *Gateway) managedAcceptConnv130Peer(conn net.Conn, remoteVersion string) error {
 	// Perform header handshake.
 	host, _, _ := net.SplitHostPort(conn.LocalAddr().String())
@@ -441,13 +445,13 @@ func exchangeRemoteHeader(conn net.Conn, ourHeader sessionHeader) (sessionHeader
 
 // managedConnectv130Peer connects to peers >= v1.3.0. The peer is added as a
 // node and a peer. The peer is only added if a nil error is returned.
-func (g *Gateway) managedConnectv130Peer(conn net.Conn, remoteVersion string, remoteAddr modules.NetAddress) error {
+func (g *Gateway) managedConnectv130Peer(conn net.Conn, remoteVersion string, remoteAddr modules.NetAddress) error { //TODO duplicated information in arguments
 	// Perform header handshake.
-	host, _, _ := net.SplitHostPort(conn.LocalAddr().String())
+	host, _, _ := net.SplitHostPort(conn.LocalAddr().String()) //TODO this needs to be the public (external) IP for node, OR acceptableSessionHeader(..) needs to not care. NATs will always make this difficult
 	ourHeader := sessionHeader{
 		GenesisID:  types.GenesisID,
 		UniqueID:   g.id,
-		NetAddress: modules.NetAddress(net.JoinHostPort(host, g.port)),
+		NetAddress: modules.NetAddress(net.JoinHostPort(host, g.port)), //TODO this does a lot of unnecessary type conversions to get here
 	}
 	if err := exchangeOurHeader(conn, ourHeader); err != nil {
 		return err
