@@ -163,13 +163,14 @@ func acceptableSessionHeader(ourHeader, remoteHeader sessionHeader, remoteAddr s
 	} else if err := remoteHeader.NetAddress.IsStdValid(); err != nil {
 		return fmt.Errorf("invalid remote address: %v", err)
 	}
-	//TODO is this check necessary?
-	// Check that claimed NetAddress matches remoteAddr
+	//TODO is this really necessary?
+	//lol nope
+/*	// Check that claimed NetAddress matches remoteAddr
 	connHost, _, _ := net.SplitHostPort(remoteAddr)
 	claimedHost, _, _ := net.SplitHostPort(string(remoteHeader.NetAddress))
 	if connHost != claimedHost {
 		return fmt.Errorf("claimed hostname (%v) does not match conn.RemoteAddr (%v)", claimedHost, connHost)
-	}
+	}	*/
 	return nil
 }
 
@@ -447,7 +448,8 @@ func exchangeRemoteHeader(conn net.Conn, ourHeader sessionHeader) (sessionHeader
 // node and a peer. The peer is only added if a nil error is returned.
 func (g *Gateway) managedConnectv130Peer(conn net.Conn, remoteVersion string, remoteAddr modules.NetAddress) error { //TODO duplicated information in arguments
 	// Perform header handshake.
-	host, _, _ := net.SplitHostPort(conn.LocalAddr().String()) //TODO this needs to be the public (external) IP for node, OR acceptableSessionHeader(..) needs to not care. NATs will always make this difficult
+	//TODO this needs to be the public (external) IP for node, OR acceptableSessionHeader(..) needs to not care. NATs will always make this difficult
+	host, _, _ := net.SplitHostPort("101.167.87.28:9981") //hard code public IP for testing
 	ourHeader := sessionHeader{
 		GenesisID:  types.GenesisID,
 		UniqueID:   g.id,
